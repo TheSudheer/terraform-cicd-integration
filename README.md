@@ -137,6 +137,5 @@ allowInsecureProtocol = true
 
 Below is a screenshot showing the Nexus repository after a successful publish:
 
-![Nexus Repository Screenshot](home/sudheer/Screenshots/nexus-screenshot.png)
-
+![Nexus Repository Screenshot](screenshot/nexus-screenshot.png)
 
