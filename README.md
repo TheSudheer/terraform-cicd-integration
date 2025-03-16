@@ -133,5 +133,10 @@ allowInsecureProtocol = true
 
   If you encounter issues related to HTTP connections, ensure that `allowInsecureProtocol = true` is set in the repository configuration. In production, consider switching to an HTTPS endpoint.
 
+## Proof of Nexus Repository
+
+Below is a screenshot showing the Nexus repository after a successful publish:
+
+![Nexus Repository Screenshot](~/Screenshots/nexus-screenshot.png)
 
 
