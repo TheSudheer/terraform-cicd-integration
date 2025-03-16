@@ -13,7 +13,7 @@ sourceCompatibility = 1.8
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact("build/libs/java-gradle-project-$version.jar") {
+            artifact(file("build/libs/java-gradle-project-${version}.jar")) {
                 extension = 'jar'
             }
         }
@@ -22,6 +22,7 @@ publishing {
         maven {
             name = 'maven-snapshots'
             url = uri('http://localhost:8081/repository/maven-snapshots/')  // Nexus Repository URL
+            allowInsecureProtocol = true // Allow HTTP
             credentials {
                 username = project.property("repoUser") // retrieve username from gradle.properties
                 password = project.property("repoPassword") // retrieve password from gradle.properties
