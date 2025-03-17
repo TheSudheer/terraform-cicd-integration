@@ -139,3 +139,59 @@ Below is a screenshot showing the Nexus repository after a successful publish:
 
 ![Nexus Repository Screenshot](screenshot/nexus-screenshot.png)
 
+## Part-2: Docker Integration
+
+This Part-2 expands the existing project by creating a Docker image and pushing it to the existing Nexus Repository Manager using the previously produced .jar file.
+
+1. **Docker Login to Nexus Repository**
+
+   To interact with the private Docker registry, authenticate using the docker login command:
+
+   ```bash
+   docker login <nexus-server-ip>:<docker-repository-port>
+   ```
+
+   Replace `<nexus-server-ip>` and `<docker-repository-port>` with your Nexus server details (Docker repository port, not the main UI port). You will be prompted for your Nexus username and password.
+
+2. **Docker config.json and Authentication Tokens**
+
+   Upon successful login, Docker stores an authentication token in `config.json` located at `~/.docker/config.json` (Linux/macOS)
+
+3. **Pushing a Docker Image to Nexus**
+
+   - **Build a Docker Image:**
+
+     ```bash
+     docker build -t <image-name>:<tag> .
+     ```
+
+   - **Tag the Image for Nexus Registry:**
+
+     ```bash
+     docker tag <local-image-name>:<local-tag> <nexus-registry-endpoint>/<image-name>:<tag>
+     ```
+
+   - **Push the Retagged Image to Nexus:**
+
+     ```bash
+     docker push <nexus-registry-endpoint>/<image-name>:<tag>
+     ```
+
+4. **Verifying the Pushed Image in Nexus UI**
+
+   After pushing, verify the image in your Nexus Docker Hosted repository via the Nexus UI.
+
+5. **Retrieving Docker Image Information using Nexus API**
+
+   Use the Nexus REST API to retrieve information about Docker images:
+
+   ```bash
+   curl -u <nexus-username>:<nexus-password> -X GET 'http://<nexus-server-ip>:8081/service/rest/v1/components?repository=<docker-repository-name>'
+   ```
+
+   Replace placeholders with your Nexus credentials and repository details.
+
+Here is the screenshot of the docker image in Nexus repository as proof:
+
+![Docker Image Screenshot](screenshot/docker-screenshot.png)
+```
