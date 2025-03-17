@@ -1,6 +1,3 @@
-Below is an example of a complete `README.md` for your project:
-
----
 
 ```markdown
 # Java Gradle Project
