@@ -1,6 +1,3 @@
-### Updated README.md:
-
-```markdown
 # Java Gradle Project
 
 This project is a simple Spring Boot web application built using Gradle. It demonstrates how to compile a Java application and publish the generated JAR artifact to a Maven repository (Nexus) using the Maven Publishing plugin.
@@ -52,13 +49,9 @@ This Java project leverages Spring Boot to build a web application. In addition 
 
 ## Build and Run
 
-Build the project using the Gradle wrapper:
-
 ```sh
 ./gradlew build
 ```
-
-Run the Spring Boot application:
 
 ```sh
 ./gradlew bootRun
@@ -175,5 +168,5 @@ Replace placeholders with your Nexus credentials and repository details.
 Below is a screenshot showing the uploaded Docker image in Nexus:
 
 ![Docker Image Screenshot](screenshot/docker-screenshot.png)
-```
+
 
