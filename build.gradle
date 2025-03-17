@@ -21,11 +21,11 @@ publishing {
     repositories {
         maven {
             name = 'maven-snapshots'
-            url = uri('http://localhost:8081/repository/maven-snapshots/')  // Nexus Repository URL
+            url = uri('http://localhost/repository/maven-snapshots/')  // Nexus Repository URL
             allowInsecureProtocol = true // Allow HTTP
             credentials {
-                username = project.property("repoUser") // retrieve username from gradle.properties
-                password = project.property("repoPassword") // retrieve password from gradle.properties
+    		username = project.hasProperty("repoUser") ? project.property("repoUser") : System.getenv("REPO_USER")
+    		password = project.hasProperty("repoPassword") ? project.property("repoPassword") : System.getenv("REPO_PASSWORD")
             }
         }
     }
