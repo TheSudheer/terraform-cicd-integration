@@ -3,15 +3,13 @@ pipeline {
     tools {
         jdk "jdk-installer"
         gradle "Gradle"
-        SHOW_GRADLE_VERSION = "false"
     }
-
     environment {
+        SHOW_GRADLE_VERSION = "false"
         docker_repository_name = "maven-snapshots"
         SERVER_URL = "localhost"
         PORT_NO = "8081"
     }
-
     stages {
         stage('Build') {
             steps {
@@ -25,7 +23,7 @@ pipeline {
                 }
             }
         }
-        stage ("Publish to Nexus") {
+        stage("Publish to Nexus") {
             steps {
                 script {
                     // Using Nexus credentials to authenticate and upload build artifacts to the Nexus Repository Manager
@@ -39,3 +37,4 @@ pipeline {
         }
     }
 }
+
