@@ -21,7 +21,7 @@ publishing {
     repositories {
         maven {
             name = 'maven-snapshots'
-            url = uri('http://localhost/repository/maven-snapshots/')  // Nexus Repository URL
+            url = uri('http://localhost:8081/repository/maven-snapshots/')  // Nexus Repository URL
             allowInsecureProtocol = true // Allow HTTP
             credentials {
     		username = project.hasProperty("repoUser") ? project.property("repoUser") : System.getenv("REPO_USER")
