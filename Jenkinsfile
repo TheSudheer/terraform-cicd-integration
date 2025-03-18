@@ -1,40 +1,33 @@
 pipeline {
-    agent any
+    agent any 
     tools {
-        jdk "jdk-installer"
         gradle "Gradle"
     }
-    environment {
-        SHOW_GRADLE_VERSION = "false"
-        docker_repository_name = "maven-snapshots"
-        SERVER_URL = "localhost"
-        PORT_NO = "8081"
-    }
-    stages {
-        stage('Build') {
+    stages{
+        stage("Build Jar"){
+            steps{
+                sh "./gradlew clean build"
+                echo "Building the application..."
+            }
+        stage ("Build Docker Image") {
             steps {
                 script {
-                    sh "echo 'Starting the build process...'"
-                    // Check the Gradle version to ensure the correct version is being used
-                    if (env.SHOW_GRADLE_VERSION == 'true') {
-                        sh "gradle --version"
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        sh "docker build -t kalki2878/java-gradle-app:latest . "
+                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                        sh "docker push kalki2878/java-gradle-app:latest"
                     }
-                    sh "./gradlew clean build"
+                    echo "Building the Docker image..."
                 }
             }
         }
-        stage("Publish to Nexus") {
+        stage ("Deploy") {
             steps {
                 script {
-                    // Using Nexus credentials to authenticate and upload build artifacts to the Nexus Repository Manager
-                    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
-                        sh "echo 'Uploading the build artifacts to Nexus Repository Manager...'"
-                        sh "./gradlew publish"
-                        sh "curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -X GET \"http://${SERVER_URL}:${PORT_NO}/service/rest/v1/components?repository=${docker_repository_name}\""
-                    }
+                    echo "Deploying the application..."
                 }
             }
         }
     }
 }
-
