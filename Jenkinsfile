@@ -1,31 +1,37 @@
+def gv
+
+// This pipeline defines the CI/CD process including initialization, building, and deployment from external script.groovy
 pipeline {
     agent any 
     tools {
         gradle "Gradle"
     }
     stages {
+        stage("Init") {
+            steps {
+                script {
+                    gv = load "script.groovy"
+                }
+            }
+        }
         stage("Build Jar") {
             steps {
-                sh "./gradlew clean build"
-                echo "Building the application..."
+                script {
+                    gv.buildJar()
+                }
             }
         }
         stage("Build Docker Image") {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh "docker build -t kalki2878/java-gradle-app:latest ."
-                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-                        sh "docker push kalki2878/java-gradle-app:latest"
-                    }
-                    echo "Building the Docker image..."
+                    gv.buildImage()
                 }
             }
         }
         stage("Deploy") {
             steps {
                 script {
-                    echo "Deploying the application..."
+                    gv.deployApp()
                 }
             }
         }
