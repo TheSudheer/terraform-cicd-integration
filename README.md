@@ -14,23 +14,24 @@ This project is a simple Spring Boot web application built using Gradle. It demo
 - [Troubleshooting](#troubleshooting)
 - [Docker Integration (Part-2)](#docker-integration-part-2)
 - [CI/CD Pipeline (Part-3)](#cicd-pipeline-part-3)
+- [Jenkins Shared Library Setup and Basic Usage (Part-4)](#jenkins-shared-library-setup-and-basic-usage-part-4)
 
 ## Overview
 
 This Java project leverages Spring Boot to build a web application. In addition to running the application, it includes a custom Gradle configuration for publishing the JAR artifact to a Nexus repository. The project demonstrates:
-- Publishing configuration, including secure credential handling via `gradle.properties`.
-- Allowing an insecure (HTTP) protocol in a controlled environment for personal projects.
+- Secure publishing configuration via `gradle.properties`
+- Allowing an insecure (HTTP) protocol in controlled environments
 
 ## Features
 
-- **Maven Publishing:** Configured to publish snapshots to a Nexus repository.
+- **Maven Publishing:** Publishes snapshots to a Nexus repository.
 - **Gradle Build Automation:** Automated build and publish processes.
 
 ## Prerequisites
 
-- **Java Development Kit (JDK):** Ensure you have JDK 17 (or higher) installed.
-- **Gradle Wrapper:** The project includes a Gradle wrapper, so you don’t need a separate Gradle installation.
-- **Nexus Repository:** A Nexus instance (or any Maven repository) running at `http://localhost:8081/repository/maven-snapshots/` (update the URL as needed).
+- **Java Development Kit (JDK):** JDK 17 (or higher) must be installed.
+- **Gradle Wrapper:** The project includes a Gradle wrapper; no separate installation is required.
+- **Nexus Repository:** A Nexus instance (or any Maven repository) running at `http://localhost:8081/repository/maven-snapshots/` (update URL as needed).
 
 ## Getting Started
 
@@ -39,9 +40,8 @@ This Java project leverages Spring Boot to build a web application. In addition 
    git clone <repository-url>
    cd java-gradle-project
    ```
-
 2. **Configure Repository Credentials:**
-   Create or update the `gradle.properties` file in the project root with the following properties:
+   Create or update the `gradle.properties` file in the project root with:
    ```properties
    repoUser=your-username
    repoPassword=your-password
@@ -53,12 +53,11 @@ Build the project using the Gradle wrapper:
 ```sh
 ./gradlew build
 ```
-
 Run the Spring Boot application:
 ```sh
 ./gradlew bootRun
 ```
-The compiled JAR file can be found in the `build/libs/` directory.
+The compiled JAR file is located in the `build/libs/` directory.
 
 ## Publishing the Artifact
 
@@ -67,11 +66,11 @@ The compiled JAR file can be found in the `build/libs/` directory.
    ```sh
    ./gradlew publish
    ```
-This command will publish the artifact named `java-gradle-project-1.0-SNAPSHOT.jar` to the configured Nexus repository.
+This command publishes the artifact (`java-gradle-project-1.0-SNAPSHOT.jar`) to the configured Nexus repository.
 
 ### Note on Insecure Protocol
 
-The Nexus repository URL uses HTTP (`http://localhost:8081`), which is an insecure protocol. To allow this in your Gradle configuration:
+Since the Nexus repository URL uses HTTP (`http://localhost:8081`), which is insecure, add the following to your Gradle configuration:
 ```groovy
 allowInsecureProtocol = true
 ```
@@ -79,8 +78,7 @@ allowInsecureProtocol = true
 ## Gradle Configuration Details
 
 - **Plugins Used:**
-  - `maven-publish` - Publishes artifacts to a Maven repository.
-
+  - `maven-publish` – Publishes artifacts to a Maven repository.
 - **Artifact Configuration:**
   ```groovy
   artifact(file("build/libs/java-gradle-project-${version}.jar")) {
@@ -91,13 +89,12 @@ allowInsecureProtocol = true
 ## Troubleshooting
 
 - **Error: "No such property: jar for class: java.lang.String"**  
-  Ensure the string interpolation is correctly formatted:
+  Verify the string interpolation is correctly formatted:
   ```groovy
   "build/libs/java-gradle-project-${version}.jar"
   ```
-
 - **Insecure Protocol Issues:**  
-  Set `allowInsecureProtocol = true` in the Gradle configuration.
+  Ensure `allowInsecureProtocol = true` is set in the Gradle configuration.
 
 ## Proof of Nexus Repository
 
@@ -108,64 +105,111 @@ Below is a screenshot showing the Nexus repository after a successful publish:
 
 This section expands the project by creating a Docker image and pushing it to the Nexus Repository Manager using the previously generated `.jar` file.
 
-### 1. Docker Login to Nexus Repository
-
-Authenticate with the private Nexus Docker registry:
-```sh
-docker login <nexus-server-ip>:<docker-repository-port>
-```
-Replace `<nexus-server-ip>` and `<docker-repository-port>` with the Nexus server details (Docker repository port, not the UI port). You will be prompted for your Nexus username and password.
-
-### 2. Docker Authentication and Config.json
-
-Upon successful login, Docker stores an authentication token in:
-- **Linux/macOS:** `~/.docker/config.json`
-
-### 3. Pushing a Docker Image to Nexus
-
-#### Build a Docker Image:
-```sh
-docker build -t <image-name>:<tag> .
-```
-
-#### Tag the Image for Nexus Registry:
-```sh
-docker tag <local-image-name>:<local-tag> <nexus-registry-endpoint>/<image-name>:<tag>
-```
-
-#### Push the Retagged Image to Nexus:
-```sh
-docker push <nexus-registry-endpoint>/<image-name>:<tag>
-```
-
-### 4. Verifying the Pushed Image in Nexus UI
-
-After pushing, verify the image in your Nexus Docker Hosted repository via the Nexus UI.
-
-### 5. Retrieving Docker Image Information using Nexus API
-
-Retrieve information about the pushed images using the Nexus REST API:
-```sh
-curl -u <nexus-username>:<nexus-password> -X GET 'http://<nexus-server-ip>:8081/service/rest/v1/components?repository=<docker-repository-name>'
-```
-Replace placeholders with your Nexus credentials and repository details.
-
-### 6. Proof of Nexus Docker Image
-
-Below is a screenshot showing the uploaded Docker image in Nexus:
-![Docker Image Screenshot](screenshot/docker-screenshot.png)
+1. **Docker Login to Nexus Repository:**
+   ```sh
+   docker login <nexus-server-ip>:<docker-repository-port>
+   ```
+   Replace `<nexus-server-ip>` and `<docker-repository-port>` with your Nexus server details. You will be prompted for your Nexus username and password.
+2. **Docker Authentication and Config.json:**
+   Upon login, Docker stores an authentication token in:
+   - **Linux/macOS:** `~/.docker/config.json`
+3. **Pushing a Docker Image to Nexus:**
+   - **Build a Docker Image:**
+     ```sh
+     docker build -t <image-name>:<tag> .
+     ```
+   - **Tag the Image for Nexus Registry:**
+     ```sh
+     docker tag <local-image-name>:<local-tag> <nexus-registry-endpoint>/<image-name>:<tag>
+     ```
+   - **Push the Retagged Image:**
+     ```sh
+     docker push <nexus-registry-endpoint>/<image-name>:<tag>
+     ```
+4. **Verifying the Pushed Image:**
+   Check the image in your Nexus Docker Hosted repository via the Nexus UI.
+5. **Retrieving Docker Image Information:**
+   ```sh
+   curl -u <nexus-username>:<nexus-password> -X GET 'http://<nexus-server-ip>:8081/service/rest/v1/components?repository=<docker-repository-name>'
+   ```
+   Replace placeholders as needed.
+6. **Proof of Nexus Docker Image:**
+   ![Docker Image Screenshot](screenshot/docker-screenshot.png)
 
 ## CI/CD Pipeline (Part-3)
 
-This section outlines the CI/CD process for the project. The Jenkins pipeline loads an external script (`script.groovy`) which defines methods for building the JAR, creating a Docker image, and deploying the application. This modular approach simplifies maintenance and allows the CI/CD steps to be updated independently.
-
-The pipeline includes the following stages:
-- **Init:** Loads the external script to initialize variables and methods.
-- **Build Jar:** Compiles the project and creates the JAR file.
-- **Build Docker Image:** Uses the JAR to build a Docker image.
-- **Deploy:** Deploys the application based on the defined deployment strategy.
+This section outlines the CI/CD process for the project. The Jenkins pipeline loads an external script (`script.groovy`) which defines methods for:
+- **Building the JAR:** Compiles the project and creates the JAR file.
+- **Building a Docker Image:** Uses the JAR to build a Docker image.
+- **Deploying the Application:** Deploys the application based on the defined strategy.
 
 Additionally, the pipeline automates the upload of the Docker image to a private Docker Hub repository. Below is a screenshot showing proof of the Docker image upload from the CI/CD pipeline:
-
 ![Docker Hub Upload Screenshot](screenshot/dockerhub-screenshot.png)
 
+## Jenkins Shared Library Setup and Basic Usage (Part-4)
+
+As part of implementing the Shared Library, the following functions were created in the `vars/` directory to encapsulate build logic:
+
+### `vars/buildImage.groovy`
+This function builds and pushes a Docker image to Docker Hub.
+```groovy
+#!/usr/bin/env groovy
+
+def call(String imageName) {
+    echo 'Building the docker image'
+    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+        sh "docker build -t ${imageName} ."
+        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+        sh "docker push ${imageName}"
+    }
+}
+```
+**Explanation:**  
+- Accepts an `imageName` parameter to specify the Docker image name and tag.
+- Uses `withCredentials` to securely access Docker Hub credentials.
+- Executes shell commands to build the Docker image, log in to Docker Hub, and push the image.
+
+### `vars/buildJar.groovy`
+This function builds the Java application using Gradle.
+```groovy
+#!/usr/bin/env groovy
+
+def call() {
+    echo "Building the application for branch $BRANCH_NAME"
+    sh "./gradlew build"
+}
+```
+**Explanation:**  
+- No parameters are needed.
+- Prints a message indicating the branch being built.
+- Executes the Gradle build command to compile the application and create the JAR file.
+
+### Jenkinsfile Using Shared Library Functions
+```groovy
+@Library('devops-shared-lib@feature_branch') _
+pipeline {
+    agent any
+    stages {
+        stage("build jar") {
+            steps {
+                script {
+                    buildJar() // Build the JAR file using the shared library function.
+                }
+            }
+        }
+        stage("build image") {
+            steps {
+                script {
+                    buildImage("kalki2878/java-gradle-app:latest") // Build the Docker image using the shared library function.
+                }
+            }
+        }
+    }
+}
+```
+**Explanation:**  
+- The `@Library` annotation loads the shared library from the specified branch (`feature_branch`).
+- The pipeline includes two stages:
+  - **build jar:** Calls `buildJar()` to compile the Java application.
+  - **build image:** Calls `buildImage()` with the Docker image name to build and push the Docker image.
+- This setup allows centralized management of build logic via the shared library.
