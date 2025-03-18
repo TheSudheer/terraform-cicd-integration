@@ -168,5 +168,4 @@ The pipeline includes the following stages:
 Additionally, the pipeline automates the upload of the Docker image to a private Docker Hub repository. Below is a screenshot showing proof of the Docker image upload from the CI/CD pipeline:
 
 ![Docker Hub Upload Screenshot](screenshot/dockerhub-screenshot.png)
-```
 
