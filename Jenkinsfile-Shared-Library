@@ -1,5 +1,4 @@
-@Library('devops-shared-lib@master') // Load the shared library 'devops-shared-lib' from the master branch.
-
+@Library('devops-shared-lib@master') _
 pipeline {
     agent any
     stages {
