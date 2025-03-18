@@ -1,4 +1,4 @@
-@Library('devops-shared-lib@master') _
+@Library('devops-shared-lib@feature_branch') _
 pipeline {
     agent any
     stages {
