@@ -1,0 +1,22 @@
+@Library('devops-shared-lib@master') // Load the shared library 'devops-shared-lib' from the master branch.
+
+pipeline {
+    agent any
+    stages {
+        stage("build jar") {
+            steps {
+                script {
+                    buildJar() // Building the JAR file using the shared library function.
+                }
+            }
+        }
+        stage("build image") {
+            steps {
+                script {
+                    buildImage() // Building the Docker image using the shared library function.
+                }
+            }
+        }
+    }
+}
+
