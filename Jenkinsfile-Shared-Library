@@ -12,7 +12,7 @@ pipeline {
         stage("build image") {
             steps {
                 script {
-                    buildImage() // Building the Docker image using the shared library function.
+                    buildImage("kalki2878/java-gradle-app:latest") // Building the Docker image using the shared library function.
                 }
             }
         }
