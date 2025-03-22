@@ -30,7 +30,7 @@ pipeline {
         stage("check file exists") {
             steps {
                 script {
-                    sh "sudo ls -l /home/ubuntu" // Listing the files in the workspace.
+                    sh "sudo ls -l /home/ubuntu" // Listing files in /home/ubuntu to confirm docker-compose.yaml exists.
                 }
             }
         }
@@ -42,8 +42,8 @@ pipeline {
                     def dockerComposeCmd = "docker-compose -f docker-compose.yaml up --detach"
                     sshagent(['ec2-server-key']) {
                         sh "ls -l"
-                        // Copy the docker-compose.yaml file to the destination EC2 instance.
-                        sh "scp docker-compose.yaml ubuntu@52.87.160.165:/home/ec2-user"
+                        // Copy the docker-compose.yaml file using the absolute path from /home/ubuntu.
+                        sh "scp /home/ubuntu/docker-compose.yaml ubuntu@52.87.160.165:/home/ec2-user"
                         // SSH into the EC2 instance and execute the Docker Compose command.
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${dockerComposeCmd}"
                     }
