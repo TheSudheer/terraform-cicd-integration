@@ -271,8 +271,8 @@ In this part, I upgraded my deployment from running a single Docker container to
                echo 'Deploying application using Docker Compose...'
                def dockerComposeCmd = "docker-compose -f docker-compose.yaml up --detach"
                sshagent(['ec2-server-key']) {
-                   sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ec2-user@18.184.54.160:/home/ec2-user"
-                   sh "ssh -o StrictHostKeyChecking=no ec2-user@18.184.54.160 ${dockerComposeCmd}"
+                   sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@18.184.54.160:/home/ec2-user"
+                   sh "ssh -o StrictHostKeyChecking=no ubuntu@18.184.54.160 ${dockerComposeCmd}"
                }
            }
        }
@@ -313,49 +313,13 @@ Instead of hard-coding the image name in your Docker Compose file, I made the im
    # Accept the image name as the first parameter and export it as an environment variable
    export IMAGE=$1
    # Execute Docker Compose using the updated image variable
-   docker-compose -f docker-compose.yaml up --detach
+   docker-compose -f docker-compose.yml up --detach
    echo "Deployment successful!"
    ```
    *Make sure to set the script as executable (`chmod +x server-cmds.sh`).*
-3. **Update the Jenkinsfile:**
-   ```groovy
-   pipeline {
-       agent any
-       environment {
-           IMAGE_NAME = "kalki2878/java-gradle-app:2.0" // New dynamic image tag
-           EC2_INSTANCE = "ec2-user@35.180.251.121"
-       }
-       stages {
-           stage("build jar") {
-               steps {
-                   script {
-                       buildJar() // Build the application JAR
-                   }
-               }
-           }
-           stage("build image") {
-               steps {
-                   script {
-                       buildImage(env.IMAGE_NAME) // Build the Docker image with the new tag
-                   }
-               }
-           }
-           stage("deploy") {
-               steps {
-                   script {
-                       echo 'Deploying updated Docker image using Docker Compose...'
-                       def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
-                       sshagent(['ec2-server-key']) {
-                           sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${EC2_INSTANCE}:/home/ec2-user"
-                           sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${EC2_INSTANCE}:/home/ec2-user"
-                           sh "ssh -o StrictHostKeyChecking=no ${EC2_INSTANCE} ${shellCmd}"
-                       }
-                   }
-               }
-           }
-       }
-   }
-   ```
+
+3. Update the Jenkinsfile
+
 4. **Verification:**
    - On the EC2 instance, verify that `docker ps` shows the container running the new image tag.
 
@@ -389,9 +353,9 @@ To simplify my Jenkinsfile and make my deployment process more modular, I extrac
                echo 'Deploying docker image to EC2 using a shell script...'
                def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
                sshagent(['ec2-server-key']) {
-                   sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_INSTANCE}:/home/ec2-user"
-                   sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${EC2_INSTANCE}:/home/ec2-user"
-                   sh "ssh -o StrictHostKeyChecking=no ${EC2_INSTANCE} ${shellCmd}"
+                   sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_IP}:/home/ubuntu"
+                   sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${EC2_IP}:/home/ubuntu"
+                   sh "ssh -o StrictHostKeyChecking=no ${EC2_IP} ${shellCmd}"
                }
            }
        }
@@ -443,7 +407,7 @@ In this final improvement, I made the Docker Compose file dynamic so that it alw
        environment {
            // The dynamic image name (e.g., version is updated on each build)
            IMAGE_NAME = "kalki2878/java-gradle-app:2.0"
-           EC2_INSTANCE = "ec2-user@35.180.251.121"
+           EC2_IP = "ec2-user@35.180.251.121"
        }
        stages {
            stage("build jar") {
@@ -466,9 +430,9 @@ In this final improvement, I made the Docker Compose file dynamic so that it alw
                        echo 'Deploying updated Docker image using Docker Compose...'
                        def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
                        sshagent(['ec2-server-key']) {
-                           sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${EC2_INSTANCE}:/home/ec2-user"
-                           sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${EC2_INSTANCE}:/home/ec2-user"
-                           sh "ssh -o StrictHostKeyChecking=no ${EC2_INSTANCE} ${shellCmd}"
+                           sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_IP}:/home/ubuntu"
+                           sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${EC2_IP}:/home/ubuntu"
+                           sh "ssh -o StrictHostKeyChecking=no ${EC2_IP} ${shellCmd}"
                        }
                    }
                }
@@ -481,5 +445,5 @@ In this final improvement, I made the Docker Compose file dynamic so that it alw
    - On EC2, verify with `docker ps` that containers are running the newly tagged image.
 
 
-This approach ensures that every new build automatically deploys the latest image version to our EC2 instance without manual intervention.
+This approach ensures that every new build automatically deploys the latest image version to my EC2 instance without manual intervention.
 
