@@ -30,7 +30,7 @@ pipeline {
         stage("check file exists") {
             steps {
                 script {
-                    sh "ls -l /home/ubuntu" // Listing the files in the workspace.
+                    sh "sudo ls -l /home/ubuntu" // Listing the files in the workspace.
                 }
             }
         }
