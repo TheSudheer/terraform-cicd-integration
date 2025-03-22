@@ -1,16 +1,13 @@
 version: '3.8'
 services:
-  java-gradle-app:
-    image: kalki2878/java-gradle-app:latest
+  java-maven-app:
+    image: ${IMAGE}
     ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-
+      - 8080:8080
   postgres:
     image: postgres:13
     ports:
-      - "5432:5432"
+      - 5432:5432
     environment:
       - POSTGRES_PASSWORD=my-pwd
 
