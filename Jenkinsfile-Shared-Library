@@ -32,7 +32,7 @@ pipeline {
                 script {
                     echo 'Deploying docker image to EC2 using Docker Compose...'
                     // Define the shell command to execute our script on EC2
-                    def shellCmd = "bash ./server-cmds.sh"
+                    def shellCmd = "bash ./server-cmds.sh ${imageName}"
                     def ec2IP = "ubuntu@52.87.160.165"
                     sshagent(['ec2-server-key']) {
                         // List files to verify the docker-compose file is in the workspace.
