@@ -1,9 +1,11 @@
 #!/usr/bin/env groovy
 library identifier: 'devops-shared-lib@master', retriever: modernSCM(
-    [$class: 'GitSCMSource',
-     remote: 'https://github.com/TheSudheer/Jenkins-shared-library.git',
-     credentialsId: 'GitHub'
-    ])
+    [
+        $class: 'GitSCMSource',
+        remote: 'https://github.com/TheSudheer/Jenkins-shared-library.git',
+        credentialsId: 'GitHub'
+    ]
+)
 
 pipeline {
     agent any
@@ -21,17 +23,21 @@ pipeline {
         stage("build image") {
             steps {
                 script {
-                    buildImage(env.imageName) // Pass the env variable value (not the literal string)
+                    buildImage(env.imageName) // Passing the actual env variable value.
                 }
             }
         }
         stage("deploy") {
             steps {
                 script {
+                    echo 'Deploying docker image to EC2 using Docker Compose...'
+                    // Define the Docker Compose command to start containers in detached mode.
+                    def dockerComposeCmd = "docker-compose -f docker-compose.yaml up --detach"
                     sshagent(['ec2-server-key']) {
-                        def dockerCmd = "docker run -d -p 8090:8080 kalki2878/java-gradle-app:latest"
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${dockerCmd}"
-                        echo "Deploying the application..."
+                        // Copy the docker-compose.yaml file to the destination EC2 instance.
+                        sh "scp docker-compose.yaml ubuntu@52.87.160.165:/home/ec2-user"
+                        // SSH into the EC2 instance and execute the Docker Compose command.
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${dockerComposeCmd}"
                     }
                 }
             }
