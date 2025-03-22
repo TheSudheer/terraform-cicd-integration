@@ -2,6 +2,7 @@
 library identifier: 'devops-shared-lib@master', retriever: modernSCM(
     [$class: 'GitSCMSource',
      remote: 'https://github.com/TheSudheer/Jenkins-shared-library.git'
+     credentialsId: 'GitHub'
     ])
 
 pipeline {
