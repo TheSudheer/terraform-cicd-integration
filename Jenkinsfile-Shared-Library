@@ -27,10 +27,10 @@ pipeline {
                 }
             }
         }
-        stage {"check file exists"} {
+        stage("check file exists") {
             steps {
                 script {
-                    sh "cd home/ubuntu"
+                    sh "cd /home/ubuntu"
                     sh "ls -l" // Listing the files in the workspace.
                 }
             }
