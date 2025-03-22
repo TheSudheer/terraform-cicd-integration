@@ -27,7 +27,7 @@ pipeline {
                 }
             }
         }
-        stage {"check file exists"} {
+        stage("check file exists") {
             steps {
                 script {
                     sh "ls -l" // Listing the files in the workspace.
