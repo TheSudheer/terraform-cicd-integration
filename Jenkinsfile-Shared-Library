@@ -27,14 +27,6 @@ pipeline {
                 }
             }
         }
-        stage("check file exists") {
-            steps {
-                script {
-                    // Listing files in the workspace to verify that docker-compose.yaml is present.
-                    sh "ls -l"
-                }
-            }
-        }
         stage("deploy") {
             steps {
                 script {
@@ -54,6 +46,3 @@ pipeline {
         }
     }
 }
-
-
-
