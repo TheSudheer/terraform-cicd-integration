@@ -31,15 +31,16 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying docker image to EC2 using Docker Compose...'
-                    // Define the Docker Compose command to start containers in detached mode.
-                    def dockerComposeCmd = "docker-compose -f docker-compose.yml up --detach"
+                    // Define the shell command to execute our script on EC2
+                    def shellCmd = "bash ./server-cmds.sh"
                     sshagent(['ec2-server-key']) {
                         // List files to verify the docker-compose file is in the workspace.
                         sh "ls -l"
-                        // Copy the version-controlled docker-compose.yaml file to the remote EC2 instance.
+                        // Copy the version-controlled docker-compose.yml file and server-cmds.sh to the remote EC2 instance.
                         sh "scp docker-compose.yml ubuntu@52.87.160.165:/home/ubuntu"
-                        // SSH into the remote EC2 instance and execute the Docker Compose command.
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${dockerComposeCmd}"
+                        sh "scp server-cmds.sh ubuntu@52.87.160.165:/home/ubuntu"
+                        // SSH into the remote EC2 instance and execute the shell command.
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${shellCmd}"
                     }
                 }
             }
