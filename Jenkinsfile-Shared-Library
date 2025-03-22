@@ -45,7 +45,7 @@ pipeline {
                         // List files to verify the docker-compose file is in the workspace.
                         sh "ls -l"
                         // Copy the version-controlled docker-compose.yaml file to the remote EC2 instance.
-                        sh "scp docker-compose.yml ubuntu@52.87.160.165:/home/ec2-user"
+                        sh "scp docker-compose.yml ubuntu@52.87.160.165:/home/ubuntu"
                         // SSH into the remote EC2 instance and execute the Docker Compose command.
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${dockerComposeCmd}"
                     }
