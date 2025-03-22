@@ -35,7 +35,7 @@ pipeline {
                     def dockerComposeCmd = "docker-compose -f docker-compose.yaml up --detach"
                     sshagent(['ec2-server-key']) {
                         // Copy the docker-compose.yaml file to the destination EC2 instance.
-                        sh "scp docker-compose.yaml ubuntu@52.87.160.165:/home/ec2-user"
+                        sh "scp docker-compose.yaml ubuntu@52.87.160.165:/home/ubuntu"
                         // SSH into the EC2 instance and execute the Docker Compose command.
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@52.87.160.165 ${dockerComposeCmd}"
                     }
