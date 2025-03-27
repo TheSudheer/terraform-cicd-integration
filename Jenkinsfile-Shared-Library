@@ -27,22 +27,41 @@ pipeline {
                 }
             }
         }
+        stage("Configure Kubeconfig and Test Connectivity") {
+            steps {
+                // Inject AWS credentials to make aws eks update-kubeconfig work.
+                withCredentials([
+                    string(credentialsId: 'jenkins_aws_access_key_id', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'jenkins_aws_secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    sh '''
+                        # Verify AWS CLI version.
+                        aws --version
+                        
+                        # Set the AWS region environment variable.
+                        export AWS_DEFAULT_REGION=ap-southeast-1
+                        
+                        # Update kubeconfig to allow kubectl to connect to your EKS cluster.
+                        aws eks update-kubeconfig --region ap-southeast-1 --name demo-cluster
+                        
+                        # Test connectivity by listing the cluster nodes.
+                        kubectl get nodes
+                    '''
+                }
+            }
+        }
         stage("deploy") {
+            environment {
+                AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
+                AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
+                APP_NAME = 'java-gradle-app'
+                IMAGE_NAME = env.imageName
+            }
             steps {
                 script {
-                    echo 'Deploying docker image to EC2 using Docker Compose...'
-                    // Define the shell command to execute our script on EC2
-                    def shellCmd = "bash ./server-cmds.sh ${imageName}"
-                    def ec2IP = "ubuntu@52.87.160.165"
-                    sshagent(['ec2-server-key']) {
-                        // List files to verify the docker-compose file is in the workspace.
-                        sh "ls -l"
-                        // Copy the version-controlled docker-compose.yml file and server-cmds.sh to the remote EC2 instance.
-                        sh "scp docker-compose.yml ${ec2IP}:/home/ubuntu"
-                        sh "scp server-cmds.sh ${ec2IP}:/home/ubuntu"
-                        // SSH into the remote EC2 instance and execute the shell command.
-                        sh "ssh -o StrictHostKeyChecking=no ${ec2IP} ${shellCmd}"
-                    }
+                    echo 'deploying docker image...'
+                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
+                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
                 }
             }
         }
