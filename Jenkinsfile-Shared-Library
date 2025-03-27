@@ -16,38 +16,51 @@ pipeline {
         stage("build jar") {
             steps {
                 script {
-                    buildJar() // Building the JAR file using the shared library function.
+                    echo "Starting build jar stage"
+                    timeout(time: 3, unit: 'MINUTES') {
+                        buildJar() // Building the JAR file using the shared library function.
+                    }
+                    echo "Finished build jar stage"
                 }
             }
         }
         stage("build image") {
             steps {
                 script {
-                    buildImage(env.imageName) // Passing the actual env variable value.
+                    echo "Starting build image stage"
+                    timeout(time: 3, unit: 'MINUTES') {
+                        buildImage(env.imageName) // Passing the actual env variable value.
+                    }
+                    echo "Finished build image stage"
                 }
             }
         }
         stage("Configure Kubeconfig and Test Connectivity") {
             steps {
-                // Inject AWS credentials to make aws eks update-kubeconfig work.
+                echo "Starting Configure Kubeconfig and Test Connectivity stage"
                 withCredentials([
                     string(credentialsId: 'jenkins_aws_access_key_id', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'jenkins_aws_secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
-                    sh '''
-                        # Verify AWS CLI version.
-                        aws --version
-                        
-                        # Set the AWS region environment variable.
-                        export AWS_DEFAULT_REGION=ap-southeast-1
-                        
-                        # Update kubeconfig to allow kubectl to connect to your EKS cluster.
-                        aws eks update-kubeconfig --region ap-southeast-1 --name demo-cluster
-                        
-                        # Test connectivity by listing the cluster nodes.
-                        kubectl get nodes
-                    '''
+                    timeout(time: 3, unit: 'MINUTES') {
+                        sh '''
+                            set -x  # Enable verbose logging of commands.
+                            echo "Verifying AWS CLI version..."
+                            aws --version
+                            
+                            echo "Setting AWS_DEFAULT_REGION to ap-southeast-1..."
+                            export AWS_DEFAULT_REGION=ap-southeast-1
+                            
+                            echo "Updating kubeconfig for cluster demo-cluster..."
+                            aws eks update-kubeconfig --region ap-southeast-1 --name demo-cluster
+                            
+                            echo "Listing Kubernetes nodes..."
+                            kubectl get nodes
+                            set +x  # Disable verbose command logging.
+                        '''
+                    }
                 }
+                echo "Finished Configure Kubeconfig and Test Connectivity stage"
             }
         }
         stage("deploy") {
@@ -59,9 +72,19 @@ pipeline {
             }
             steps {
                 script {
-                    echo 'deploying docker image...'
-                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
-                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
+                    echo "Starting deploy stage"
+                    timeout(time: 3, unit: 'MINUTES') {
+                        sh '''
+                            set -x
+                            echo "Deploying using kubernetes/deployment.yaml..."
+                            envsubst < kubernetes/deployment.yaml | kubectl apply -f -
+                            
+                            echo "Deploying using kubernetes/service.yaml..."
+                            envsubst < kubernetes/service.yaml | kubectl apply -f -
+                            set +x
+                        '''
+                    }
+                    echo "Finished deploy stage"
                 }
             }
         }
