@@ -9,6 +9,9 @@ library identifier: 'devops-shared-lib@master', retriever: modernSCM(
 
 pipeline {
     agent any
+    tools {
+        gradle 'Gradle'
+    }
     environment {
         imageName = "kalki2878/java-gradle-app:latest"
     }
@@ -16,51 +19,33 @@ pipeline {
         stage("build jar") {
             steps {
                 script {
-                    echo "Starting build jar stage"
-                    timeout(time: 3, unit: 'MINUTES') {
-                        buildJar() // Building the JAR file using the shared library function.
-                    }
-                    echo "Finished build jar stage"
+                    // Now the gradle command is available on PATH
+                    buildJar() // Your shared library function that calls the gradle build
                 }
             }
         }
         stage("build image") {
             steps {
                 script {
-                    echo "Starting build image stage"
-                    timeout(time: 3, unit: 'MINUTES') {
-                        buildImage(env.imageName) // Passing the actual env variable value.
-                    }
-                    echo "Finished build image stage"
+                    buildImage(env.imageName)
                 }
             }
         }
         stage("Configure Kubeconfig and Test Connectivity") {
             steps {
-                echo "Starting Configure Kubeconfig and Test Connectivity stage"
                 withCredentials([
                     string(credentialsId: 'jenkins_aws_access_key_id', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'jenkins_aws_secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
-                    timeout(time: 3, unit: 'MINUTES') {
-                        sh '''
-                            set -x  # Enable verbose logging of commands.
-                            echo "Verifying AWS CLI version..."
-                            aws --version
-                            
-                            echo "Setting AWS_DEFAULT_REGION to ap-southeast-1..."
-                            export AWS_DEFAULT_REGION=ap-southeast-1
-                            
-                            echo "Updating kubeconfig for cluster demo-cluster..."
-                            aws eks update-kubeconfig --region ap-southeast-1 --name demo-cluster
-                            
-                            echo "Listing Kubernetes nodes..."
-                            kubectl get nodes
-                            set +x  # Disable verbose command logging.
-                        '''
-                    }
+                    sh '''
+                        set -x
+                        aws --version
+                        export AWS_DEFAULT_REGION=ap-southeast-1
+                        aws eks update-kubeconfig --region ap-southeast-1 --name demo-cluster
+                        kubectl get nodes
+                        set +x
+                    '''
                 }
-                echo "Finished Configure Kubeconfig and Test Connectivity stage"
             }
         }
         stage("deploy") {
@@ -72,19 +57,9 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Starting deploy stage"
-                    timeout(time: 3, unit: 'MINUTES') {
-                        sh '''
-                            set -x
-                            echo "Deploying using kubernetes/deployment.yaml..."
-                            envsubst < kubernetes/deployment.yaml | kubectl apply -f -
-                            
-                            echo "Deploying using kubernetes/service.yaml..."
-                            envsubst < kubernetes/service.yaml | kubectl apply -f -
-                            set +x
-                        '''
-                    }
-                    echo "Finished deploy stage"
+                    echo 'deploying docker image...'
+                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
+                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
                 }
             }
         }
