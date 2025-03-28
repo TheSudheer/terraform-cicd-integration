@@ -9,13 +9,9 @@ library identifier: 'devops-shared-lib@master', retriever: modernSCM(
 
 pipeline {
     agent any
-
-    // Use the globally defined JDK8 and Gradle-4.4.1 tools.
-    tools {
-        jdk 'JDK8'
-        gradle 'Gradle-4.4.1'
+    options {
+        timeout(time: 10, unit: 'MINUTES')
     }
-
     environment {
         imageName = "kalki2878/java-gradle-app:latest"
     }
