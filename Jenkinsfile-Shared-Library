@@ -18,7 +18,7 @@ pipeline {
     }
     environment {
         AWS_ECR_REPO = "710271936636.dkr.ecr.ap-south-1.amazonaws.com/java-gradle-app"
-        imageName = "kalki2878/java-gradle-app:latest"
+        imageName = "latest"
     }
     stages {
         stage("build jar") {
