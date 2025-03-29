@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+
 library identifier: 'devops-shared-lib@master', retriever: modernSCM(
     [
         $class: 'GitSCMSource',
@@ -16,15 +17,16 @@ pipeline {
         timeout(time: 10, unit: 'MINUTES')
     }
     environment {
+        AWS_ECR_REPO = "710271936636.dkr.ecr.ap-south-1.amazonaws.com/java-gradle-app"
         imageName = "kalki2878/java-gradle-app:latest"
     }
     stages {
         stage("build jar") {
             steps {
                 script {
-                    echo "Starting build jar stage"
+                    echo "build jar file"
                     timeout(time: 3, unit: 'MINUTES') {
-                        buildJar() // This shared library function will now run using Java 8.
+                        buildJar()
                     }
                     echo "Finished build jar stage"
                 }
@@ -35,7 +37,7 @@ pipeline {
                 script {
                     echo "Starting build image stage"
                     timeout(time: 3, unit: 'MINUTES') {
-                        buildImage(env.imageName)
+                        buildImage(env.AWS_ECR_REPO, env.imageName)
                     }
                     echo "Finished build image stage"
                 }
@@ -57,8 +59,8 @@ pipeline {
                             echo "Setting AWS_DEFAULT_REGION to ap-southeast-1..."
                             export AWS_DEFAULT_REGION=ap-south-1
 
-                            echo "Updating kubeconfig for cluster demo-cluster..."
-                            aws eks update-kubeconfig --region ap-south-1 --name demo-cluster-3
+                            echo "Updating kubeconfig for cluster demo-cluster-3..."
+                            aws eks update-kubeconfig --region=ap-south-1 --name=demo-cluster-3
 
                             echo "Listing Kubernetes nodes..."
                             kubectl get nodes
@@ -96,3 +98,4 @@ pipeline {
         }
     }
 }
+
