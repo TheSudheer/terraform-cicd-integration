@@ -13,17 +13,13 @@ To demonstrate a functional CI/CD workflow for deploying containerized Java appl
 
 *Description:* This screenshot shows the AWS ECR repository (`java-gradle-app`) containing the Docker image pushed by the Jenkins pipeline, tagged as `latest` (or the relevant tag if modified).
 
-```markdown
 ![AWS ECR Image Push Success](/screenshot/aws_ecr_screenshot.png)
-```
 
 ### 2. AWS EKS Cluster Deployment
 
 *Description:* This screenshot shows the application running successfully on the AWS EKS cluster (`demo-cluster-3`). The view may display running pods (`kubectl get pods`), the service (`kubectl get svc`), or the worker nodes.
 
-```markdown
 ![AWS EKS Deployment Success](/screenshot/aws_eks_screenshot.png)
-```
 ---
 
 ## Prerequisites
