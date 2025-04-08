@@ -27,6 +27,8 @@ pipeline {
                 script {
                     echo "build jar file"
                     timeout(time: 3, unit: 'MINUTES') {
+                    // This piece of code was written using the jenkins-shared-library from:
+                    // https://github.com/TheSudheer/Jenkins-shared-library.git
                         buildJar()
                     }
                     echo "Finished build jar stage"
@@ -39,6 +41,8 @@ pipeline {
                     echo "Starting build image stage"
                     timeout(time: 3, unit: 'MINUTES') {
                         aws_Ecr(env.AWS_ECR_REPO, env.imageName)
+                    // This piece of code was written using the jenkins-shared-library from:
+                    // https://github.com/TheSudheer/Jenkins-shared-library.git
                     }
                     echo "Finished build image stage"
                 }
