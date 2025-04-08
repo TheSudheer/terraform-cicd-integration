@@ -1,4 +1,3 @@
-```markdown
 # CI/CD Pipeline for Java/Gradle Application Using Jenkins, AWS ECR, and AWS EKS
 
 This repository contains the `Jenkinsfile` and associated configurations for a Continuous Integration and Continuous Deployment (CI/CD) pipeline. The pipeline automates the process of building a Java/Gradle application, generating a JAR file, building a Docker image, pushing it to AWS Elastic Container Registry (ECR), and deploying it to an AWS Elastic Kubernetes Service (EKS) cluster.
