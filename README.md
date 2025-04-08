@@ -1,230 +1,200 @@
-Okay, here is a detailed README.md file for the provided Jenkinsfile-Shared-Library.
+```markdown
+# CI/CD Pipeline for Java/Gradle Application Using Jenkins, AWS ECR, and AWS EKS
 
-# Jenkins CI/CD Pipeline for Java Gradle Application Deployment to AWS EKS
+This repository contains the `Jenkinsfile` and associated configurations for a Continuous Integration and Continuous Deployment (CI/CD) pipeline. The pipeline automates the process of building a Java/Gradle application, generating a JAR file, building a Docker image, pushing it to AWS Elastic Container Registry (ECR), and deploying it to an AWS Elastic Kubernetes Service (EKS) cluster.
 
-This repository contains a Jenkinsfile (`Jenkinsfile-Shared-Library`) that defines a CI/CD pipeline for building a Java application using Gradle, containerizing it with Docker, pushing the image to AWS Elastic Container Registry (ECR), and deploying it to an AWS Elastic Kubernetes Service (EKS) cluster.
+**Objective:**  
+To demonstrate a functional CI/CD workflow for deploying containerized Java applications to Kubernetes on AWS, leveraging Jenkins Shared Libraries.
 
-The pipeline leverages a Jenkins Shared Library for reusable code components.
+---
 
-## Overview
+## Proof of Execution (Screenshots)
 
-The pipeline automates the following processes:
+### 1. AWS ECR Image Push
 
-1.  **Build:** Compiles the Java application and packages it into a JAR file using Gradle.
-2.  **Containerize:** Builds a Docker image of the application.
-3.  **Push:** Pushes the built Docker image to a specified AWS ECR repository.
-4.  **Configure:** Configures `kubectl` to connect to the target AWS EKS cluster.
-5.  **Deploy:** Deploys the application to the EKS cluster using Kubernetes manifest files (`deployment.yaml` and `service.yaml`), substituting necessary environment variables.
+*Description:* This screenshot shows the AWS ECR repository (`java-gradle-app`) containing the Docker image pushed by the Jenkins pipeline, tagged as `latest` (or the relevant tag if modified).
 
-## Features
+```markdown
+![AWS ECR Image Push Success](/screenshot/aws_ecr_screenshot.png)
+```
 
-*   **Declarative Pipeline:** Uses Jenkins' declarative pipeline syntax for clarity and structure.
-*   **Shared Library Integration:** Utilizes a Jenkins Shared Library (`devops-shared-lib`) hosted on GitHub for common tasks (`buildJar`, `aws_Ecr`).
-*   **Gradle Build:** Supports building Java applications managed with Gradle.
-*   **Docker Integration:** Builds Docker images and pushes them to AWS ECR.
-*   **AWS EKS Deployment:** Configures Kubernetes context and deploys application manifests to an EKS cluster.
-*   **Credential Management:** Securely handles AWS credentials using the Jenkins Credentials Binding plugin.
-*   **Environment Variable Substitution:** Uses `envsubst` to dynamically inject configuration into Kubernetes manifests.
-*   **Timeouts:** Implements stage-level and global timeouts for resilience.
+### 2. AWS EKS Cluster Deployment
+
+*Description:* This screenshot shows the application running successfully on the AWS EKS cluster (`demo-cluster-3`). The view may display running pods (`kubectl get pods`), the service (`kubectl get svc`), or the worker nodes.
+
+```markdown
+![AWS EKS Deployment Success](/screenshot/aws_eks_screenshot.png)
+```
+---
 
 ## Prerequisites
 
-Before running this pipeline, ensure the following are set up:
+Before running the pipeline, ensure the following prerequisites are met:
 
-1.  **Jenkins Instance:** A running Jenkins controller.
-2.  **Jenkins Plugins:**
-    *   Pipeline (installed by default)
-    *   Git (installed by default)
-    *   Pipeline: Groovy Libraries (for Shared Libraries)
-    *   Credentials Binding
-    *   Workspace Cleanup (Recommended)
-    *   Docker Pipeline (Potentially required by the `aws_Ecr` function in the shared library)
-    *   Any other plugins required by the `devops-shared-lib`.
-3.  **Jenkins Tools:**
-    *   **Gradle:** A Gradle installation configured in Jenkins under `Manage Jenkins` -> `Tools`. The pipeline specifically requires a tool named `Gradle 7.6.1`.
-4.  **Jenkins Credentials:**
-    *   `GitHub`: A credential (e.g., Personal Access Token, SSH Key) with read access to the Shared Library repository (`https://github.com/TheSudheer/Jenkins-shared-library.git`). Used for retrieving the shared library.
-    *   `jenkins_aws_access_key_id`: Jenkins String Credential storing the AWS Access Key ID.
-    *   `jenkins_aws_secret_access_key`: Jenkins Secret Text Credential storing the AWS Secret Access Key.
-    *   *Note:* The AWS credentials need sufficient IAM permissions to:
-        *   Authenticate with ECR (`ecr:GetAuthorizationToken`).
-        *   Push images to the specified ECR repository (`ecr:InitiateLayerUpload`, `ecr:UploadLayerPart`, `ecr:CompleteLayerUpload`, `ecr:PutImage`, etc.).
-        *   Describe the EKS cluster (`eks:DescribeCluster`) for `aws eks update-kubeconfig`.
-        *   Interact with the EKS cluster via `kubectl` (permissions depend on Kubernetes RBAC configuration, but typically include rights to manage Deployments and Services).
-5.  **Shared Library Access:** Jenkins needs network connectivity to `github.com` to fetch the shared library.
-6.  **AWS Resources:**
-    *   **ECR Repository:** An ECR repository at `710271936636.dkr.ecr.ap-south-1.amazonaws.com/java-gradle-app`.
-    *   **EKS Cluster:** An EKS cluster named `demo-cluster-3` in the `ap-south-1` region.
-7.  **Agent Environment:** The Jenkins agent(s) where the pipeline runs must have:
-    *   `aws cli` installed and configured (or available in the path).
-    *   `kubectl` installed and configured (or available in the path).
-    *   `envsubst` command available (usually part of `gettext` package).
-    *   Docker client installed and configured (likely needed for the `aws_Ecr` shared library function).
-    *   Access to the internet (for downloading Gradle dependencies, pulling base Docker images, accessing AWS APIs).
-8.  **Project Structure:** The Git repository containing this `Jenkinsfile-Shared-Library` should also contain:
-    *   The Java Gradle application source code.
-    *   A `Dockerfile` (implicitly used by the `aws_Ecr` shared library function).
-    *   A `kubernetes/` directory containing:
-        *   `deployment.yaml`: Kubernetes Deployment manifest.
-        *   `service.yaml`: Kubernetes Service manifest.
-        *   These manifests should use environment variables like `$APP_NAME` and `$IMAGE_NAME` (and potentially `$AWS_ECR_REPO`) where substitutions are needed via `envsubst`.
+1. **Jenkins Server:**  
+   - A running Jenkins instance.
 
-## Configuration
+2. **Jenkins Plugins:**
+   - Pipeline  
+   - Pipeline: Shared Groovy Libraries  
+   - Git  
+   - Credentials Binding  
+   - Docker Pipeline (or Docker plugin)  
+   - AWS Steps (or ensure AWS CLI is installed and configured on the agent)  
+   - Kubernetes CLI Plugin (or ensure `kubectl` is installed on the agent)  
+   - Gradle Plugin
 
-### Jenkinsfile Variables
+3. **Jenkins Global Tool Configuration:**
+   - **Gradle:** A Gradle installation configured with the name `Gradle 7.6.1`.
 
-The following environment variables are defined within the `Jenkinsfile`:
+4. **Jenkins Agent Configuration:**
+   - The Jenkins agent (`agent any` implies any available agent) must have Docker, AWS CLI, `kubectl`, and `envsubst` (usually part of the `gettext` package) installed.
+   - The agent must have network connectivity to GitHub (for the Shared Library), AWS ECR, and the AWS EKS cluster API endpoint.
+   - The user running the Jenkins agent process requires permissions to execute Docker commands.
 
-*   `AWS_ECR_SERVER`: `710271936636.dkr.ecr.ap-south-1.amazonaws.com` - The ECR registry server address.
-*   `AWS_ECR_REPO`: `710271936636.dkr.ecr.ap-south-1.amazonaws.com/java-gradle-app` - The full ECR repository path.
-*   `imageName`: `latest` - The tag used for the Docker image.
+5. **Source Code Repository:**  
+   The repository must include:
+   - A `build.gradle` file.
+   - A `Dockerfile` in the root directory to build the application image.
+   - Kubernetes manifest files (e.g., `kubernetes/deployment.yaml`, `kubernetes/service.yaml`) prepared with placeholders for `envsubst` substitution.
 
-### Shared Library
+6. **Jenkins Shared Library:**
+   - Ensure Jenkins can clone the repository: `https://github.com/TheSudheer/Jenkins-shared-library.git`.
 
-This pipeline relies heavily on the `devops-shared-lib` shared library from `https://github.com/TheSudheer/Jenkins-shared-library.git`.
+7. **AWS Account & Resources:**
+   - An active AWS Account.
+   - An **ECR Repository** (e.g., `java-gradle-app` in the `ap-south-1` region).
+   - An **EKS Cluster** (e.g., `demo-cluster-3` in the `ap-south-1` region).
+   - **IAM Permissions:** AWS credentials must have sufficient permissions for ECR push operations (like `ecr:GetAuthorizationToken`, `ecr:BatchCheckLayerAvailability`, etc.) and for EKS interaction (`eks:DescribeCluster` for `update-kubeconfig`). Additionally, `kubectl` commands require appropriate Kubernetes RBAC permissions within the cluster.
 
-```groovy
-library identifier: 'devops-shared-lib@master', retriever: modernSCM(
-    [
-        $class: 'GitSCMSource',
-        remote: 'https://github.com/TheSudheer/Jenkins-shared-library.git',
-        credentialsId: 'GitHub' // Credential ID configured in Jenkins
-    ]
-)
+8. **Jenkins Credentials:**
+   - `GitHub`: Credential (SSH key or username/password/token) for cloning the Shared Library repository.
+   - `jenkins_aws_access_key_id`: AWS Access Key ID (as Jenkins Secret Text credential).
+   - `jenkins_aws_secret_access_key`: AWS Secret Access Key (as Jenkins Secret Text credential).
 
+---
 
-The pipeline specifically calls the following functions from the library:
+## Pipeline Overview
 
-buildJar(): Assumed to execute the Gradle build process (e.g., gradle clean build).
+The `Jenkinsfile` outlines a declarative pipeline with key components as described below:
 
-aws_Ecr(env.AWS_ECR_REPO, env.imageName): Assumed to handle Docker image building and pushing to the specified AWS ECR repository and tag.
+1. **Shared Library:**
+   - Imports the `devops-shared-lib@master` library using `GitHub` credentials.
+   - Uses functions like `buildJar()` and `aws_Ecr()`, which are defined within the shared library.
 
-Pipeline Breakdown
+2. **Agent & Tools:**
+   - Configured to run on `agent any`.
+   - Uses the Gradle tool defined as `Gradle 7.6.1`.
 
-The pipeline consists of the following stages:
+3. **Options:**
+   - Establishes a global pipeline timeout of 10 minutes.
 
-build jar:
+4. **Global Environment Variables:**
+   - `AWS_ECR_SERVER`: AWS ECR registry endpoint URL.
+   - `AWS_ECR_REPO`: Full URI of the target ECR repository.
+   - `imageName`: Defaults to the Docker image tag `latest`.  
+     > **Note:** Consider using a dynamic tag (e.g., `${env.BUILD_NUMBER}` or a Git commit hash) for better traceability.
 
-Prints start and end messages.
+5. **Pipeline Stages:**
+   - **`build jar`:**  
+     - Invokes `buildJar()` from the shared library to compile the Java code and generate a JAR file.
+     - Includes a 3-minute timeout.
+   - **`build image`:**  
+     - Invokes `aws_Ecr(env.AWS_ECR_REPO, env.imageName)` from the shared library to:
+       - Build the Docker image using the local `Dockerfile`.
+       - Log in to AWS ECR.
+       - Tag and push the image to the ECR repository.
+     - Includes a 3-minute timeout.
+   - **`Configure Kubeconfig and Test Connectivity`:**  
+     - Injects AWS credentials (`jenkins_aws_access_key_id`, `jenkins_aws_secret_access_key`).
+     - Runs shell commands to:
+       - Verify AWS CLI installation.
+       - Set the default AWS region to `ap-south-1`.
+       - Update the agent's `kubeconfig` for access to the `demo-cluster-3` EKS cluster.
+       - Execute `kubectl get nodes` to verify connectivity.
+     - Includes a 3-minute timeout.
+   - **`deploy`:**  
+     - Re-injects AWS credentials using the `credentials()` helper.
+     - Sets `APP_NAME` and `IMAGE_NAME` environment variables.
+     - Executes shell commands that:
+       - Use `envsubst` to inject environment variables into `kubernetes/deployment.yaml` and `kubernetes/service.yaml`.
+       - Deploy the application to the EKS cluster with `kubectl apply -f -`.
+     - Includes a 3-minute timeout.
 
-Calls the buildJar() function from the shared library.
+---
 
-Likely uses the configured 'Gradle 7.6.1' tool.
+## How to Run
 
-Has a 3-minute timeout.
+1. **Verify Prerequisites:**  
+   Confirm all necessary AWS resources, Jenkins configurations, credentials, and source code are in place.
 
-build image:
+2. **Create a New Pipeline Job in Jenkins:**
+   - In the Jenkins UI, create a new Pipeline job.
+   - Configure the job to use "Pipeline script from SCM".
+   - Set the SCM to Git and provide the repository URL containing your application code.
+   - Specify the branch (e.g., `main` or `master`).
+   - Select the appropriate `GitHub` credential if accessing a private repository.
+   - Ensure the "Script Path" is set to `Jenkinsfile`.
 
-Prints start and end messages.
+3. **Run the Pipeline:**
+   - Save the job configuration.
+   - Click "Build Now".
+   - Monitor the pipeline execution via the Jenkins UI and check log outputs for each stage (shared library steps, AWS CLI commands, `kubectl` commands, and Docker operations).
 
-Calls the aws_Ecr() function from the shared library, passing the ECR repository path and image tag.
+---
 
-This stage likely performs docker build and docker push operations, potentially including ECR authentication.
+## Shared Library Usage
 
-Has a 3-minute timeout.
+This pipeline leverages a Jenkins Shared Library hosted at [TheSudheer/Jenkins-shared-library](https://github.com/TheSudheer/Jenkins-shared-library.git). Key functions include:
 
-Configure Kubeconfig and Test Connectivity:
+- **`buildJar()`:**  
+  Responsible for compiling the Java/Gradle project.
 
-Prints start and end messages.
+- **`aws_Ecr(repo, tag)`:**  
+  Handles building the Docker image, tagging it appropriately, logging in to AWS ECR, and pushing the image to the specified repository.
 
-Uses withCredentials to securely inject AWS access key ID and secret key into the environment.
+For detailed functionality, refer to the documentation provided with the shared library.
 
-Executes shell commands (sh step):
+---
 
-Verifies the aws cli version.
+## Kubernetes Manifests and `envsubst`
 
-Sets the AWS_DEFAULT_REGION to ap-south-1.
+The deployment stage uses `envsubst` to substitute environment variables into Kubernetes manifest files before applying them. Ensure that placeholders in your manifests follow the format `${VAR_NAME}`. For instance:
 
-Updates the local kubeconfig file to grant access to the demo-cluster-3 EKS cluster using the provided AWS credentials.
-
-Tests connectivity by listing Kubernetes nodes (kubectl get nodes).
-
-Has a 3-minute timeout.
-
-deploy:
-
-Prints start and end messages.
-
-Sets stage-specific environment variables:
-
-AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY: Retrieves credentials again (though already available from the previous stage's withCredentials, this makes them explicitly available to envsubst).
-
-APP_NAME: Set to java-gradle-app.
-
-IMAGE_NAME: Set to the value of env.imageName (which is latest).
-
-Executes shell commands (sh step):
-
-Uses envsubst to substitute environment variables (like $APP_NAME, $IMAGE_NAME, $AWS_ECR_REPO if used in the YAML) into kubernetes/deployment.yaml and applies the result using kubectl apply -f -.
-
-Does the same substitution and application process for kubernetes/service.yaml.
-
-Has a 3-minute timeout.
-
-How to Use
-
-Ensure Prerequisites: Verify all items listed in the Prerequisites section are met.
-
-Place Jenkinsfile: Add this Jenkinsfile-Shared-Library file to the root of your Java Gradle application's Git repository.
-
-Add Kubernetes Manifests: Create the kubernetes/deployment.yaml and kubernetes/service.yaml files within your repository, ensuring they use environment variables for dynamic values (e.g., image: $AWS_ECR_REPO:$IMAGE_NAME).
-
-Create Jenkins Job:
-
-In Jenkins, create a new Pipeline job (or Multibranch Pipeline if appropriate).
-
-Configure the job's SCM section to point to your Git repository.
-
-Ensure the "Script Path" is set to Jenkinsfile-Shared-Library (or the correct filename if you renamed it).
-
-Save the job configuration.
-
-Run Pipeline: Trigger the Jenkins job manually or configure it to trigger automatically (e.g., on code pushes).
-
-Kubernetes Manifests (kubernetes/)
-
-This pipeline expects Kubernetes manifest files (deployment.yaml, service.yaml) to be present in a kubernetes/ directory at the root of the repository.
-
-The deploy stage uses envsubst to replace variables in these files before applying them. Make sure your YAML files use the correct variable syntax (e.g., $VARIABLE_NAME or ${VARIABLE_NAME}) for values that need to be substituted at deploy time.
-
-Example deployment.yaml snippet:
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: $APP_NAME # Will be substituted
+```yaml
+# Example snippet from deployment.yaml
 spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: $APP_NAME # Will be substituted
   template:
-    metadata:
-      labels:
-        app: $APP_NAME # Will be substituted
     spec:
       containers:
-      - name: $APP_NAME # Will be substituted
-        image: $AWS_ECR_REPO:$IMAGE_NAME # Will be substituted
-        ports:
-        - containerPort: 8080
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Yaml
-IGNORE_WHEN_COPYING_END
-Troubleshooting
+        - name: ${APP_NAME}            # Placeholder for application name
+          image: ${AWS_ECR_REPO}:${IMAGE_NAME}   # Placeholders for ECR repository and image tag
+```
 
-Shared Library Fetch Error: Check Jenkins credentials (GitHub ID) and network connectivity to GitHub. Ensure the repository URL is correct.
+---
 
-Gradle Tool Not Found: Verify the Gradle tool named Gradle 7.6.1 is configured correctly in Jenkins Global Tool Configuration.
+## Potential Improvements & Considerations
 
-ECR Authentication Error: Ensure the AWS credentials (jenkins_aws_access_key_id, jenkins_aws_secret_access_key) have the necessary ecr:GetAuthorizationToken and push permissions. Check the region.
+- **Image Tagging:**  
+  Instead of using a static `latest` tag, consider using dynamic tags like `${env.BUILD_NUMBER}` or a Git commit hash (e.g., `${env.GIT_COMMIT.substring(0,7)}`) for improved versioning and traceability.
 
-aws eks update-kubeconfig Failure: Verify the AWS credentials have eks:DescribeCluster permission for demo-cluster-3 in ap-south-1. Check if the cluster exists and the name/region are correct.
+- **Idempotency & Rollback:**  
+  Use checks such as `kubectl rollout status deployment/<deployment-name>` to verify deployment success, and implement rollback strategies if necessary.
 
-kubectl Errors: Ensure kubectl is installed on the agent and the kubeconfig is correctly updated. Check EKS RBAC permissions for the AWS credentials used.
+- **Error Handling:**  
+  Incorporate explicit error checking after critical commands (e.g., verifying exit codes of `./gradlew`, Docker push commands, and `kubectl apply`).
 
-envsubst: command not found: Install the gettext package (or equivalent) on the Jenkins agent.
+- **Security:**  
+  - Consider using more granular IAM roles, such as IAM Roles for Service Accounts (IRSA) in EKS, instead of relying solely on long-lived AWS credentials.
+  - Avoid hardcoding cluster names (e.g., `demo-cluster-3`) and regions; use Jenkins parameters or environment variables.
+  - Securely store sensitive information like AWS credentials and repository names.
 
+- **Shared Library Enhancements:**  
+  Ensure that functions within the shared library are robust, well-documented, and thoroughly tested.
+
+- **Testing:**  
+  Add stages for integration or smoke tests following deployment to verify application health in the EKS cluster.
+
+- **Resource Cleanup:**  
+  Consider implementing steps to clean up old Docker images on the Jenkins agent when appropriate.
+---
