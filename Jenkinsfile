@@ -70,7 +70,7 @@ pipeline {
                 script {
                     echo "Waiting for ec2-server to initialize"
 
-                    sleep (time: 90, unit: "SECONDS" ) 
+                    sleep (time: 30, unit: "SECONDS" ) 
 
                     echo "${ec2_Public_IP}"
 
@@ -84,8 +84,8 @@ pipeline {
                         // List files to verify the docker-compose file is in the workspace.
                         sh "ls -l"
                         // Copy the version-controlled docker-compose.yml file and server-cmds.sh to the remote EC2 instance.
-                        sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${ec2IP}:/home/ubuntu"
-                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2IP}:/home/ubuntu"
+                        sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${ec2IP}:/home/ec2-user"
+                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh ${ec2IP}:/home/ec2-user"
                         // SSH into the remote EC2 instance and execute the shell command.
                         sh "ssh -o StrictHostKeyChecking=no ${ec2IP} '${shellCmd}'"
                     }
