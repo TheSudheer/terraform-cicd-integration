@@ -38,7 +38,7 @@ pipeline {
                 script {
                     echo "Starting build image stage"
                     timeout(time: 3, unit: 'MINUTES') {
-                        buildImage.groovy(env.imageName)
+                        buildImage(env.imageName)
                     // This piece of code was written using the jenkins-shared-library from:
                     // https://github.com/TheSudheer/Jenkins-shared-library.git
                     }
