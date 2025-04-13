@@ -1,5 +1,3 @@
----
-
 # CI/CD Pipeline with Jenkins, Terraform, and Docker Compose for Java Application on AWS
 
 This project demonstrates a complete end-to-end CI/CD pipeline orchestrating the build, infrastructure provisioning, and deployment of a containerized Java application with a PostgreSQL database onto an AWS EC2 instance.
