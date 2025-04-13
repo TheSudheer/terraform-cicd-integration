@@ -78,7 +78,7 @@ pipeline {
 
                     // Define the shell command to execute our script on EC2
                     def shellCmd = "bash ./server-cmds.sh ${imageName} ${DOCKER_CREDS_USR} ${DOCKER_CREDS_PSW}"
-                    def ec2IP = "ubuntu@${ec2_Public_IP}"
+                    def ec2IP = "ec2-user@${ec2_Public_IP}"
                     
                     sshagent(['ec2-server-key']) {
                         // List files to verify the docker-compose file is in the workspace.
